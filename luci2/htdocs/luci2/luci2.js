@@ -173,6 +173,13 @@ String.prototype.format = function()
 	return out + str;
 }
 
+if (!window.location.origin)
+	window.location.origin = '%s//%s%s'.format(
+		window.location.protocol,
+		window.location.hostname,
+		(window.location.port ? ':' + window.location.port : '')
+	);
+
 function LuCI2()
 {
 	var L = this;
