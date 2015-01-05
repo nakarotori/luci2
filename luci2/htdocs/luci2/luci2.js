@@ -226,6 +226,55 @@ function LuCI2()
 		return _class;
 	};
 
+	Class.require = function(name)
+	{
+		var path = '/' + name.replace(/\./g, '/') + '.js';
+
+		return $.ajax(path, {
+			method: 'GET',
+			async: false,
+			cache: true,
+			dataType: 'text'
+		}).then(function(text) {
+			var code = '%s\n\n//@ sourceURL=%s/%s'.format(text, window.location.origin, path);
+			var construct = eval(code);
+
+			var parts = name.split(/\./);
+			var cparent = L.Class || (L.Class = { });
+
+			for (var i = 1; i < parts.length - 1; i++)
+			{
+				cparent = cparent[parts[i]];
+
+				if (!cparent)
+					throw "Missing parent class";
+			}
+
+			cparent[parts[i]] = construct;
+		});
+	};
+
+	Class.instantiate = function(name)
+	{
+		Class.require(name).then(function() {
+			var parts = name.split(/\./);
+			var iparent = L;
+			var construct = L.Class;
+
+			for (var i = 1; i < parts.length - 1; i++)
+			{
+				iparent = iparent[parts[i]];
+				construct = construct[parts[i]];
+
+				if (!iparent)
+					throw "Missing parent class";
+			}
+
+			if (construct[parts[i]])
+				iparent[parts[i]] = new construct[parts[i]]();
+		});
+	};
+
 	this.defaults = function(obj, def)
 	{
 		for (var key in def)
