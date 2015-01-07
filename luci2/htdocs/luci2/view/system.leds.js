@@ -19,7 +19,7 @@ L.ui.view.extend({
 			prepare: function() {
 				delete m.sections[0].fields._net_dev.choices;
 
-				var devs = L.NetworkModel.getDevices().sort(function(a, b) {
+				var devs = L.network.getDevices().sort(function(a, b) {
 					if (a.name() < b.name())
 						return -1;
 					else if (a.name() > b.name())

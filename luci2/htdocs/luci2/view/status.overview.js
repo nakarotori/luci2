@@ -22,9 +22,9 @@ L.ui.view.extend({
 	renderContents: function() {
 		var self = this;
 		return $.when(
-			L.NetworkModel.refreshStatus().then(function() {
-				var wan  = L.NetworkModel.findWAN();
-				var wan6 = L.NetworkModel.findWAN6();
+			L.network.refreshStatus().then(function() {
+				var wan  = L.network.findWAN();
+				var wan6 = L.network.findWAN6();
 
 				if (!wan && !wan6)
 				{
@@ -41,7 +41,7 @@ L.ui.view.extend({
 						width:  '146px',
 						align:  'right',
 						format: function(v) {
-							var dev = L.NetworkModel.resolveAlias(v.getDevice());
+							var dev = L.network.resolveAlias(v.getDevice());
 							if (dev)
 								return $('<span />')
 									.addClass('badge')
@@ -411,7 +411,7 @@ L.ui.view.extend({
 	execute: function()
 	{
 		var self = this;
-        return L.NetworkModel.init().then(function() {
+        return L.network.load().then(function() {
 			self.repeat(self.renderContents, 5000);
         });
 	}

@@ -151,11 +151,11 @@ L.ui.view.extend({
 		return $.when.apply($, deferreds).then(function() {
 			$('button').prop('disabled', false);
 			return $.when(
-				L.NetworkModel.refreshDeviceStatus(),
-				L.NetworkModel.refreshInterfaceStatus()
+				L.network.refreshDeviceStatus(),
+				L.network.refreshInterfaceStatus()
 			);
 		}).then(function() {
-			var networks = L.NetworkModel.getInterfaces();
+			var networks = L.network.getInterfaces();
 
 			for (var i = 0; i < networks.length; i++)
 			{
@@ -164,7 +164,7 @@ L.ui.view.extend({
 			}
 
 			var max = 0.1;
-			var networks = L.NetworkModel.getInterfaces();
+			var networks = L.network.getInterfaces();
 
 			for (var i = 0; i < networks.length; i++)
 			{
@@ -354,8 +354,8 @@ L.ui.view.extend({
 	execute: function() {
 		var self = this;
 
-		return L.NetworkModel.init().then(function() {
-			self.renderContents(L.NetworkModel.getInterfaces());
+		return L.network.load().then(function() {
+			self.renderContents(L.network.getInterfaces());
 		});
 	}
 });

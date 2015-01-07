@@ -4,7 +4,7 @@ L.ui.view.extend({
 
 	execute: function() {
 		var self = this;
-		var ifaces = L.NetworkModel.getInterfaces();
+		var ifaces = L.network.getInterfaces();
 
 		var m = new L.cbi.Map('network', {
 			readonly:    !self.options.acls.network
