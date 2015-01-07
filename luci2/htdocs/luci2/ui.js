@@ -390,9 +390,9 @@
 			}
 
 			if (invalid)
-				state.form.find('.alert-message').show();
+				state.form.find('.alert').show();
 			else
-				state.form.find('.alert-message').hide();
+				state.form.find('.alert').hide();
 
 			L.ui.dialog(L.tr('Authorization Required'), state.form, {
 				style: 'confirm',
