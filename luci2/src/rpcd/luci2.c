@@ -2888,6 +2888,6 @@ rpc_luci2_api_init(const struct rpc_daemon_ops *o, struct ubus_context *ctx)
 	return rv;
 }
 
-const struct rpc_plugin rpc_plugin = {
+struct rpc_plugin rpc_plugin = {
 	.init = rpc_luci2_api_init
 };
