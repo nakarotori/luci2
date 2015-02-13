@@ -606,6 +606,7 @@
 			{
 				L.ui.loading(true);
 				L.ui.renderView(node).then(function() {
+					$('#mainmenu.in').collapse('hide');
 					L.ui.loading(false);
 				});
 			}
