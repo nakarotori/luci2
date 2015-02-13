@@ -1233,6 +1233,241 @@
 		}
 	});
 
+	ui_class.grid = ui_class.AbstractWidget.extend({
+		init: function()
+		{
+			this._rows = [ ];
+		},
+
+		row: function(values)
+		{
+			if ($.isArray(values))
+			{
+				this._rows.push(values);
+			}
+			else if ($.isPlainObject(values))
+			{
+				var v = [ ];
+				for (var i = 0; i < this.options.columns.length; i++)
+				{
+					var col = this.options.columns[i];
+
+					if (typeof col.key == 'string')
+						v.push(values[col.key]);
+					else
+						v.push(null);
+				}
+				this._rows.push(v);
+			}
+		},
+
+		rows: function(rows)
+		{
+			for (var i = 0; i < rows.length; i++)
+				this.row(rows[i]);
+		},
+
+		createCell: function(col, classNames)
+		{
+			var sizes = [ 'xs', 'sm', 'md', 'lg' ];
+
+			var cell = $('<div />')
+				.addClass('cell clearfix');
+
+			if (classNames)
+				cell.addClass(classNames);
+
+			if (col.nowrap)
+				cell.addClass('nowrap');
+
+			if (col.align)
+				cell.css('text-align', col.align);
+
+			for (var i = 0; i < sizes.length; i++)
+				cell.addClass((col['width_' + sizes[i]] > 0)
+					? 'col-%s-%d'.format(sizes[i], col['width_' + sizes[i]])
+					: 'hidden-%s'.format(sizes[i]));
+
+			if (col.hidden)
+				cell.addClass('hidden-%s'.format(col.hidden));
+
+			return cell;
+		},
+
+		render: function(id)
+		{
+			var fieldset = $('<fieldset />')
+				.addClass('cbi-section');
+
+			if (this.options.caption)
+				fieldset.append($('<legend />').append(this.options.caption));
+
+			var grid = $('<div />')
+				.addClass('luci2-grid luci2-grid-hover');
+
+			if (this.options.condensed)
+				grid.addClass('luci2-grid-condensed');
+
+			var has_caption = false;
+			var has_description = false;
+
+			var sizes = [ 'xs', 'sm', 'md', 'lg' ];
+
+			for (var i = 0; i < sizes.length; i++)
+			{
+				var size = sizes[i];
+				var width_unk = 0;
+				var width_dyn = 0;
+				var width_rem = 12;
+
+				for (var j = 0; j < this.options.columns.length; j++)
+				{
+					var col = this.options.columns[j];
+					var k = i, width = NaN;
+
+					do { width = col['width_' + sizes[k++]]; }
+						while (isNaN(width) && k < sizes.length);
+
+					if (isNaN(width))
+						width = col.width;
+
+					if (isNaN(width))
+						width_unk++;
+					else
+						width_rem -= width, col['width_' + size] = width;
+
+					if (col.caption)
+						has_caption = true;
+
+					if (col.description)
+						has_description = true;
+				}
+
+				if (width_unk > 0)
+					width_dyn = Math.floor(width_rem / width_unk);
+
+				for (var j = 0; j < this.options.columns.length; j++)
+					if (isNaN(this.options.columns[j]['width_' + size]))
+						this.options.columns[j]['width_' + size] = width_dyn;
+			}
+
+			if (has_caption)
+			{
+				var row = $('<div />')
+					.addClass('row')
+					.appendTo(grid);
+
+				for (var i = 0; i < this.options.columns.length; i++)
+				{
+					var col = this.options.columns[i];
+					var cell = this.createCell(col, 'caption')
+						.appendTo(row);
+
+					if (col.caption)
+						cell.append(col.caption);
+				}
+			}
+
+			if (has_description)
+			{
+				var row = $('<div />')
+					.addClass('row')
+					.appendTo(grid);
+
+				for (var i = 0; i < this.options.columns.length; i++)
+				{
+					var col = this.options.columns[i];
+					var cell = this.createCell(col, 'description')
+						.appendTo(row);
+
+					if (col.description)
+						cell.append(col.description);
+				}
+			}
+
+			if (this._rows.length == 0)
+			{
+				if (this.options.placeholder)
+					$('<div />')
+						.addClass('row')
+						.append($('<div />')
+							.addClass('col-md-12 cell placeholder clearfix')
+							.append(this.options.placeholder))
+						.appendTo(grid);
+			}
+			else
+			{
+				for (var i = 0; i < this._rows.length; i++)
+				{
+					var row = $('<div />')
+						.addClass('row')
+						.appendTo(grid);
+
+					for (var j = 0; j < this.options.columns.length; j++)
+					{
+						var col = this.options.columns[j];
+						var cell = this.createCell(col, 'content')
+							.appendTo(row);
+
+						var val = this._rows[i][j];
+
+						if (typeof(val) == 'undefined')
+							val = col.placeholder;
+
+						if (typeof(val) == 'undefined')
+							val = '';
+
+						if (typeof col.format == 'string')
+							cell.append(col.format.format(val));
+						else if (typeof col.format == 'function')
+							cell.append(col.format(val, i));
+						else
+							cell.append(val);
+					}
+				}
+			}
+
+			this._rows = [ ];
+
+			return fieldset.append(grid);
+		}
+	});
+
+	ui_class.hlist = ui_class.AbstractWidget.extend({
+		render: function()
+		{
+			if (!$.isArray(this.options.items))
+				return '';
+
+			var list = $('<span />');
+			var sep = this.options.separator || ' | ';
+			var items = [ ];
+
+			for (var i = 0; i < this.options.items.length; i += 2)
+			{
+				if (typeof(this.options.items[i+1]) === 'undefined' ||
+				    this.options.items[i+1] === '')
+					continue;
+
+				items.push(this.options.items[i], this.options.items[i+1]);
+			}
+
+			for (var i = 0; i < items.length; i += 2)
+			{
+				list.append($('<span />')
+						.addClass('nowrap')
+						.append($('<strong />')
+							.append(items[i])
+							.append(': '))
+						.append(items[i+1])
+						.append(((i+2) < items.length) ? sep : ''))
+					.append(' ');
+			}
+
+			return list;
+		}
+	});
+
 	ui_class.progress = ui_class.AbstractWidget.extend({
 		render: function()
 		{
