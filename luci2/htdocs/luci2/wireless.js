@@ -63,6 +63,7 @@ Class.extend({
 			return L.rpc.flush();
 		}).then(function(networks) {
 			var rv = { };
+			var net_by_devname = { };
 
 			var phy_attrs = [
 				'country', 'channel', 'frequency', 'frequency_offset',
@@ -80,7 +81,7 @@ Class.extend({
 					rv[networks[i].phy] = { networks: [ ] }
 				);
 
-				var net = {
+				var net = net_by_devname[networks[i].device] = {
 					device: networks[i].device
 				};
 
@@ -89,6 +90,17 @@ Class.extend({
 
 				for (var j = 0; j < net_attrs.length; j++)
 					net[net_attrs[j]] = networks[i][net_attrs[j]];
+
+				/* copy parent interface properties to wds interfaces */
+				if (net.device.match(/^(.+)\.sta\d+$/) &&
+				    net_by_devname[RegExp.$1])
+				{
+					var pnet = net_by_devname[RegExp.$1];
+					for (var j = 0; j < net_attrs.length; j++)
+						if (typeof(networks[i][net_attrs[j]]) === 'undefined' ||
+						    net_attrs[j] == 'encryption')
+							net[net_attrs[j]] = pnet[net_attrs[j]];
+				}
 
 				phy.networks.push(net);
 			}
