@@ -733,6 +733,26 @@
 				.attr('title', title ? title : '')
 				.addClass('btn btn-' + style)
 				.text(label);
+		},
+
+		icon: function(src, alt, title)
+		{
+			if (!src.match(/\.[a-z]+$/))
+				src += '.png';
+
+			if (!src.match(/^\//))
+				src = L.globals.resource + '/icons/' + src;
+
+			var icon = $('<img />')
+				.attr('src', src);
+
+			if (typeof(alt) !== 'undefined')
+				icon.attr('alt', alt);
+
+			if (typeof(title) !== 'undefined')
+				icon.attr('title', title);
+
+			return icon;
 		}
 	};
 
