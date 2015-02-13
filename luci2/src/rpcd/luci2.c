@@ -2283,6 +2283,18 @@ rpc_luci2_network_dev_list(struct ubus_context *ctx, struct ubus_object *obj,
 	return 0;
 }
 
+static int
+rpc_luci2_network_eap_support(struct ubus_context *ctx, struct ubus_object *obj,
+                              struct ubus_request_data *req, const char *method,
+                              struct blob_attr *msg)
+{
+	blob_buf_init(&buf, 0);
+	blobmsg_add_u8(&buf, "master", !system("/usr/sbin/hostapd -veap"));
+	blobmsg_add_u8(&buf, "client", !system("/usr/sbin/wpa_supplicant -veap"));
+	ubus_send_reply(ctx, req, buf.head);
+	return 0;
+}
+
 
 struct opkg_state {
 	int cur_offset;
@@ -2814,7 +2826,8 @@ rpc_luci2_api_init(const struct rpc_daemon_ops *o, struct ubus_context *ctx)
 		                                     rpc_data_policy),
 		UBUS_METHOD("ifdown",                rpc_luci2_network_ifdown,
 		                                     rpc_data_policy),
-		UBUS_METHOD_NOARG("device_list",     rpc_luci2_network_dev_list)
+		UBUS_METHOD_NOARG("device_list",     rpc_luci2_network_dev_list),
+		UBUS_METHOD_NOARG("eap_support",     rpc_luci2_network_eap_support)
 	};
 
 	static struct ubus_object_type luci2_network_type =
