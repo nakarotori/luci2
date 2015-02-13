@@ -129,7 +129,7 @@ Class.extend({
 		});
 	},
 
-	formatEncryption: function(enc)
+	formatEncryption: function(enc, condensed)
 	{
 		var format_list = function(l, s)
 		{
@@ -144,7 +144,9 @@ Class.extend({
 
 		if (enc.wep)
 		{
-			if (enc.wep.length == 2)
+			if (condensed)
+				return L.tr('WEP');
+			else if (enc.wep.length == 2)
 				return L.tr('WEP Open/Shared') + ' (%s)'.format(format_list(enc.ciphers, ', '));
 			else if (enc.wep[0] == 'shared')
 				return L.tr('WEP Shared Auth') + ' (%s)'.format(format_list(enc.ciphers, ', '));
@@ -153,7 +155,11 @@ Class.extend({
 		}
 		else if (enc.wpa)
 		{
-			if (enc.wpa.length == 2)
+			if (condensed && enc.wpa.length == 2)
+				return L.tr('WPA mixed');
+			else if (condensed)
+				return (enc.wpa[0] == 2) ? L.tr('WPA2') : L.tr('WPA');
+			else if (enc.wpa.length == 2)
 				return L.tr('mixed WPA/WPA2') + ' %s (%s)'.format(
 					format_list(enc.authentication, '/'),
 					format_list(enc.ciphers, ', ')
