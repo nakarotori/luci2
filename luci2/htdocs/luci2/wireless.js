@@ -9,6 +9,13 @@ Class.extend({
 		}
 	}),
 
+	getPhyName: L.rpc.declare({
+		object: 'iwinfo',
+		method: 'phyname',
+		params: [ 'section' ],
+		expect: { 'phyname': '' }
+	}),
+
 	getDeviceStatus: L.rpc.declare({
 		object: 'iwinfo',
 		method: 'info',

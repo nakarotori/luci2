@@ -35,7 +35,8 @@
 				"iwinfo": [
 					"devices",
 					"info",
-					"assoclist"
+					"assoclist",
+					"phyname"
 				],
 				"system": [
 					"info",
