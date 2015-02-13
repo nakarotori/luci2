@@ -32,13 +32,15 @@ L.ui.view.extend({
 					return;
 				}
 
-				var networkTable = new L.ui.table({
+				var networkTable = new L.ui.grid({
 					caption: L.tr('Network'),
 					columns: [ {
-						width:  '146px',
-						format: '%s'
+						width:    2,
+						width_sm: 12,
+						format:   '%s'
 					}, {
-						width:  '146px',
+						width:    2,
+						width_sm: 3,
 						align:  'right',
 						format: function(v) {
 							var dev = L.network.resolveAlias(v.getDevice());
@@ -52,27 +54,16 @@ L.ui.view.extend({
 							return '';
 						}
 					}, {
+						width:  6,
+						width_sm: 9,
 						format: function(v, n) {
-							var s = '<strong>' + L.tr('Type') + ':</strong> %s | ' +
-							        '<strong>' + L.tr('Connected') + ':</strong> %t<br />';
-
-							s = s.format(v.getProtocol().description, v.getUptime(),
-							             n ? v.getIPv6Addrs(true).join(', ')
-							               : v.getIPv4Addrs(true).join(', '));
-
-							var addr = n ? v.getIPv6Addrs() : v.getIPv4Addrs();
-							if (addr.length)
-								s += '<strong>' + L.tr('Address') + ':</strong> %s<br />'.format(addr.join(', '));
-
-							var gw = v.getIPv4Gateway();
-							if (gw)
-								s += '<strong>' + L.tr('Gateway') + ':</strong> %s<br />'.format(gw);
-
-							var dns = n ? v.getIPv6DNS() : v.getIPv4DNS();
-							if (dns.length)
-								s += '<strong>' + L.tr('DNS') + ':</strong> %s<br />'.format(dns.join(', '));
-
-							return s;
+							return new L.ui.hlist({ items: [
+								L.tr('Type'), v.getProtocol().description,
+								L.tr('Connected'), '%t'.format(v.getUptime()),
+								L.tr('Address'), (n ? v.getIPv6Addrs() : v.getIPv4Addrs()).join(', '),
+								L.tr('Gateway'), v.getIPv4Gateway(),
+								L.tr('DNS'), (n ? v.getIPv6DNS() : v.getIPv4DNS()).join(', ')
+							] }).render();
 						}
 					} ]
 				});
@@ -86,10 +77,10 @@ L.ui.view.extend({
 				networkTable.insertInto('#network_status_table');
 			}),
 			self.getConntrackCount().then(function(count) {
-				var conntrackTable = new L.ui.table({
+				var conntrackTable = new L.ui.grid({
 					caption: L.tr('Connection Tracking'),
 					columns: [ {
-						width: '300px'
+						width:    4
 					}, {
 						format: function(v) {
 							return new L.ui.progress({
@@ -105,9 +96,14 @@ L.ui.view.extend({
 				conntrackTable.insertInto('#conntrack_status_table');
 			}),
 			L.system.getInfo().then(function(info) {
-				var sysinfoTable = new L.ui.table({
+				var sysinfoTable = new L.ui.grid({
 					caption: L.tr('System'),
-					columns: [ { width: '300px' }, { } ]
+					columns: [ {
+						width:    4
+					}, {
+						width:    8,
+						nowrap:   true
+					} ]
 				});
 
 				sysinfoTable.rows([
@@ -127,11 +123,11 @@ L.ui.view.extend({
 
 				sysinfoTable.insertInto('#system_status_table');
 
-				var memoryTable = new L.ui.table({
+				var memoryTable = new L.ui.grid({
 					caption: L.tr('Memory'),
 					columns: [ {
-						format: '%s',
-						width:  '300px'
+						format:   '%s',
+						width:    4
 					}, {
 						format: function(v) {
 							return new L.ui.progress({
@@ -158,11 +154,11 @@ L.ui.view.extend({
 
 				if (info.swap.total > 0)
 				{
-					var swapTable = new L.ui.table({
+					var swapTable = new L.ui.grid({
 						caption: L.tr('Swap'),
 						columns: [ {
-							format: '%s',
-							width:  '300px'
+							format:   '%s',
+							width:    4
 						}, {
 							format: function(v) {
 								return new L.ui.progress({
@@ -182,11 +178,11 @@ L.ui.view.extend({
 					swapTable.insertInto('#swap_status_table');
 				}
 
-				var diskTable = new L.ui.table({
+				var diskTable = new L.ui.grid({
 					caption: L.tr('Storage'),
 					columns: [ {
-						format: '%s',
-						width:  '300px'
+						format:   '%s',
+						width:    4
 					}, {
 						format: function(v) {
 							return new L.ui.progress({
@@ -253,52 +249,45 @@ L.ui.view.extend({
 						}]);
 					}
 
-					var wifiTable = new L.ui.table({
+					var wifiTable = new L.ui.grid({
 						caption: i ? null : L.tr('Wireless'),
 						columns: [ {
-							width:  '34px',
+							width:    2,
+							width_sm: 3,
 							align:  'right',
 							format: function(v, n)
 							{
 								if (typeof(v) != 'boolean')
-								{
 									return new L.ui.devicebadge(v).render();
-								}
 								else
-								{
-									var img = document.createElement('img');
-										img.src = L.globals.resource + '/icons/wifi_big' + (v ? '' : '_disabled') + '.png';
-
-									return img;
-								}
+									return L.ui.icon('wifi_big' + (v ? '' : '_disabled'));
 							}
 						}, {
+							width:    6,
+							width_sm: 9,
 							format: function(v, n)
 							{
 								if (typeof(rows[n][0]) != 'boolean')
 								{
-									var s = '<strong>' + L.tr('Mode') + ':</strong> %s | ' +
-									        '<strong>' + L.tr('Bitrate') + ':</strong> %s | ' +
-									        '<strong>' + L.tr('SSID') + ':</strong> %s<br />' +
-											'<strong>' + L.tr('BSSID') + ':</strong> %s | ' +
-											'<strong>' + L.tr('Encryption') + ':</strong> %s';
-
-									return s.format(
-										v.mode, v.bitrate ? ('~ %.1f ' + L.tr('Mbit/s')).format(v.bitrate / 1000) : '?',
-										v.ssid, v.bssid, L.wireless.formatEncryption(v.encryption)
-									);
+									return new L.ui.hlist({ items: [
+										L.tr('Mode'), v.mode,
+										L.tr('Bitrate'), v.bitrate ? ('~ %.1f ' + L.tr('Mbit/s')).format(v.bitrate / 1000) : undefined,
+										L.tr('SSID'), v.ssid,
+										L.tr('BSSID'), v.bssid,
+										L.tr('Encryption'), L.wireless.formatEncryption(v.encryption)
+									] }).render();
 								}
 								else
 								{
-									var s = '<big><strong>%s</strong></big><br />' +
-											'<strong>' + L.tr('Channel') + ':</strong> %d (%.3f ' + L.tr('GHz') + ') | ' +
-											'<strong>' + L.tr('TX Power') + ':</strong> %d ' + L.tr('dBm') + '';
-
-									return s.format(
-										v.name,
-										v.channel, v.frequency / 1000,
-										v.txpower
-									);
+									return $('<big />')
+										.append($('<strong />')
+											.addClass('nowrap')
+											.append(v.name))
+										.append('<br />')
+										.add(new L.ui.hlist({ items: [
+												L.tr('Channel'), '%d (%.3f %s)'.format(v.channel, v.frequency / 1000, L.tr('GHz')),
+												L.tr('TX Power'), '%d %s'.format(v.txpower, L.tr('dBm'))
+											] }).render());
 								}
 							}
 						} ]
@@ -311,40 +300,49 @@ L.ui.view.extend({
 			L.wireless.getAssocLists().then(function(assoclist) {
 				var formatRate = function(v)
 				{
-					return (typeof v.mcs != 'undefined')
-						? ('%.1f ' + L.tr('Mbit/s') + ', MCS %d, %d%s').format(v.rate / 1000, v.mcs, v['40mhz'] ? 40 : 20, L.tr('MHz'))
-						: ('%.1f ' + L.tr('Mbit/s')).format(v.rate / 1000);
+					return '<span class="nowrap">%s</span>'.format(
+						(!isNaN(v.mcs) && v.mcs > 0)
+							? ('%.1f ' + L.tr('Mbit/s') + ', MCS %d, %d%s').format(v.rate / 1000, v.mcs, v['40mhz'] ? 40 : 20, L.tr('MHz'))
+							: ('%.1f ' + L.tr('Mbit/s')).format(v.rate / 1000));
 				};
 
-				var assocTable = new L.ui.table({
+				var assocTable = new L.ui.grid({
 					caption:     L.tr('Associated Stations'),
 					placeholder: L.tr('No information available'),
 					columns:     [ {
 						format:  function(v, n) {
 							return new L.ui.devicebadge(assoclist[n]).render();
 						},
-						width:   '34px',
-						align:   'right',
-						key:     'signal'
+						width:    2,
+						width_sm: 2,
+						align:    'right',
+						key:      'signal'
 					}, {
-						caption: L.tr('MAC-Address'),
-						key:     'mac'
+						width_sm: 4,
+						caption:  L.tr('MAC-Address'),
+						key:      'mac'
 					}, {
-						caption: L.tr('Signal'),
-						format:  '%d ' + L.tr('dBm') + '',
-						key:     'signal'
+						caption:  L.tr('Signal'),
+						format:   '%d ' + L.tr('dBm') + '',
+						key:      'signal',
+						width:    1,
+						width_sm: 0
 					}, {
-						caption: L.tr('Noise'),
-						format:  '%d ' + L.tr('dBm') + '',
-						key:     'noise'
+						caption:  L.tr('Noise'),
+						format:   '%d ' + L.tr('dBm') + '',
+						key:      'noise',
+						width:    1,
+						width_sm: 0
 					}, {
-						caption: L.tr('RX Rate'),
-						format:  formatRate,
-						key:     'rx'
+						caption:  L.tr('RX Rate'),
+						format:   formatRate,
+						key:      'rx',
+						width:    3
 					}, {
-						caption: L.tr('TX Rate'),
-						format:  formatRate,
-						key:     'tx'
+						caption:  L.tr('TX Rate'),
+						format:   formatRate,
+						key:      'tx',
+						width:    3
 					} ]
 				});
 
@@ -352,22 +350,29 @@ L.ui.view.extend({
 				assocTable.insertInto('#wifi_assoc_table');
 			}),
 			self.getDHCPLeases().then(function(leases) {
-				var leaseTable = new L.ui.table({
+				var leaseTable = new L.ui.grid({
 					caption:     L.tr('DHCP Leases'),
 					placeholder: L.tr('There are no active leases.'),
 					columns: [ {
 						caption:     L.tr('Hostname'),
 						placeholder: '?',
-						key:         'hostname'
+						key:         'hostname',
+						nowrap:      true,
+						width_sm:    5
 					}, {
 						caption:     L.tr('IPv4-Address'),
-						key:         'ipaddr'
+						key:         'ipaddr',
+						width_sm:    4,
+						format: '255.255.255.255'
 					}, {
 						caption:     L.tr('MAC-Address'),
-						key:         'macaddr'
+						key:         'macaddr',
+						width_sm:    0
 					}, {
 						caption:     L.tr('Leasetime remaining'),
 						key:         'expires',
+						width_sm:    3,
+						nowrap:      true,
 						format:      function(v) {
 							return (v <= 0) ? L.tr('expired') : '%t'.format(v);
 						}
@@ -381,21 +386,25 @@ L.ui.view.extend({
 				if (!leases.length)
 					return;
 
-				var leaseTable = new L.ui.table({
+				var leaseTable = new L.ui.grid({
 					caption:     L.tr('DHCPv6 Leases'),
 					columns: [ {
 						caption:     L.tr('Hostname'),
 						placeholder: '?',
-						key:         'hostname'
+						key:         'hostname',
+						width_sm:    0
 					}, {
 						caption:     L.tr('IPv6-Address'),
-						key:         'ip6addr'
+						key:         'ip6addr',
+						width_sm:    6
 					}, {
 						caption:     L.tr('DUID'),
-						key:         'duid'
+						key:         'duid',
+						width_sm:    0
 					}, {
 						caption:     L.tr('Leasetime remaining'),
 						key:         'expires',
+						width_sm:    6,
 						format:      function(v) {
 							return (v <= 0) ? L.tr('expired') : '%t'.format(v);
 						}
