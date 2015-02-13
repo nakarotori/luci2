@@ -2739,6 +2739,135 @@
 		}
 	});
 
+	cbi_class.GridSection = cbi_class.TypedSection.extend({
+		renderGridHead: function()
+		{
+			var ghead = $('<div />').addClass('row hidden-xs');
+
+			for (var j = 0; j < this.tabs[0].fields.length; j++)
+			{
+				var wdh = this.tabs[0].fields[j].options.width;
+				    wdh = isNaN(wdh) ? this.options.dyn_width : wdh;
+
+				ghead.append($('<div />')
+					.addClass('col-sm-%d cell caption clearfix'.format(wdh))
+					.append(this.tabs[0].fields[j].label('caption')));
+			}
+
+			if (this.options.addremove !== false || this.options.sortable)
+			{
+				var wdh = this.options.dyn_width + this.options.pad_width;
+				ghead.append($('<div />')
+					.addClass('col-xs-8 col-sm-%d cell'.format(wdh))
+					.text(' '));
+			}
+
+			return ghead;
+		},
+
+		renderGridRow: function(sid, index)
+		{
+			var row = $('<div />')
+				.addClass('row luci2-section-item')
+				.attr('id', this.id('sectionitem', sid))
+				.attr('data-luci2-sid', sid);
+
+			for (var j = 0; j < this.tabs[0].fields.length; j++)
+			{
+				var wdh = this.tabs[0].fields[j].options.width;
+				    wdh = isNaN(wdh) ? this.options.dyn_width : wdh;
+
+				row.append($('<div />')
+					.addClass('col-xs-4 hidden-sm hidden-md hidden-lg cell caption')
+					.append(this.tabs[0].fields[j].label('caption')));
+
+				row.append($('<div />')
+					.addClass('col-xs-8 col-sm-%d cell content clearfix'.format(wdh))
+					.append(this.tabs[0].fields[j].render(sid, true)));
+			}
+
+			if (this.options.addremove !== false || this.options.sortable)
+			{
+				var wdh = this.options.dyn_width + this.options.pad_width;
+				row.append($('<div />')
+					.addClass('col-xs-12 col-sm-%d cell'.format(wdh))
+					.append($('<div />')
+						.addClass('btn-group pull-right')
+						.append(this.renderSort(index))
+						.append(this.renderRemove(index))));
+			}
+
+			return row;
+		},
+
+		renderGridBody: function(parent_sid)
+		{
+			var s = this.getUCISections(parent_sid);
+			var rows = [ ];
+
+			if (s.length == 0)
+			{
+				var cols = this.tabs[0].fields.length;
+
+				if (this.options.addremove !== false || this.options.sortable)
+					cols++;
+
+				rows.push($('<div />')
+					.addClass('row')
+					.append($('<div />')
+						.addClass('col-sm-12 cell placeholder text-muted')
+						.text(this.label('placeholder') || L.tr('There are no entries defined yet.'))));
+			}
+
+			for (var i = 0; i < s.length; i++)
+			{
+				var sid = s[i]['.name'];
+				var inst = this.instance[sid] = { tabs: [ ] };
+
+				rows.push(this.renderGridRow(sid, i));
+			}
+
+			return rows;
+		},
+
+		renderBody: function(condensed, parent_sid)
+		{
+			var n_dynamic = 0;
+			var dyn_width = 0;
+			var fix_width = 0;
+			var pad_width = 0;
+
+			var cols = this.tabs[0].fields.length;
+
+			if (this.options.addremove !== false || this.options.sortable)
+				cols++;
+
+			for (var i = 0; i < cols; i++)
+			{
+				var col = this.tabs[0].fields[i];
+				if (col && !isNaN(col.options.width))
+					fix_width += col.options.width;
+				else
+					n_dynamic++;
+			}
+
+			if (n_dynamic > 0)
+			{
+				this.options.dyn_width = Math.floor((12 - fix_width) / n_dynamic);
+				this.options.pad_width = (12 - fix_width) % n_dynamic;
+			}
+			else
+			{
+				this.options.pad_width = 12 - fix_width;
+			}
+
+			return $('<div />')
+				.addClass('luci2-grid luci2-grid-condensed')
+				.append(this.renderGridHead())
+				.append(this.renderGridBody(parent_sid));
+		}
+	});
+
 	cbi_class.NamedSection = cbi_class.TypedSection.extend({
 		getUCISections: function(cb)
 		{
