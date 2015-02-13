@@ -303,7 +303,7 @@ Class.extend({
 			else
 				delete n[conf][sid][opt];
 		}
-		else if (typeof(val) != 'undefined')
+		else if (typeof(val) != 'undefined' && val !== '')
 		{
 			/* do not set within deleted section */
 			if (d[conf] && d[conf][sid] === true)
