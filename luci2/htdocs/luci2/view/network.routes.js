@@ -4,13 +4,13 @@ L.ui.view.extend({
 
 	execute: function() {
 		var self = this;
-		var ifaces = L.NetworkModel.getInterfaces();
+		var ifaces = L.network.getInterfaces();
 
 		var m = new L.cbi.Map('network', {
 			readonly:    !self.options.acls.network
 		});
 
-		var s4 = m.section(L.cbi.TableSection, 'route', {
+		var s4 = m.section(L.cbi.GridSection, 'route', {
 			caption:     L.tr('Static IPv4 Routes'),
 			anonymous:   true,
 			addremove:   true,
@@ -28,20 +28,23 @@ L.ui.view.extend({
 
 		s4.option(L.cbi.InputValue, 'target', {
 			caption:     L.tr('Target'),
-			datatype:    'ip4addr'
+			datatype:    'ip4addr',
+			width:       2
 		});
 
 		s4.option(L.cbi.InputValue, 'netmask', {
 			caption:     L.tr('IPv4-Netmask'),
 			datatype:    'ip4addr',
 			placeholder: '255.255.255.255',
-			optional:    true
+			optional:    true,
+			width:       2
 		});
 
 		s4.option(L.cbi.InputValue, 'gateway', {
 			caption:     L.tr('IPv4-Gateway'),
 			datatype:    'ip4addr',
-			optional:    true
+			optional:    true,
+			width:       2
 		});
 
 		s4.option(L.cbi.InputValue, 'metric', {
@@ -59,7 +62,7 @@ L.ui.view.extend({
 		});
 
 
-		var s6 = m.section(L.cbi.TableSection, 'route6', {
+		var s6 = m.section(L.cbi.GridSection, 'route6', {
 			caption:     L.tr('Static IPv6 Routes'),
 			anonymous:   true,
 			addremove:   true,
@@ -77,13 +80,15 @@ L.ui.view.extend({
 
 		s6.option(L.cbi.InputValue, 'target', {
 			caption:     L.tr('Target'),
-			datatype:    'ip6addr'
+			datatype:    'ip6addr',
+			width:       3
 		});
 
 		s6.option(L.cbi.InputValue, 'gateway', {
 			caption:     L.tr('IPv6-Gateway'),
 			datatype:    'ip6addr',
-			optional:    true
+			optional:    true,
+			width:       3
 		});
 
 		s6.option(L.cbi.InputValue, 'metric', {

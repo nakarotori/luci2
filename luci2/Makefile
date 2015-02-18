@@ -27,7 +27,7 @@ define Package/luci2
   SECTION:=luci2
   CATEGORY:=LuCI2
   TITLE:=LuCI2 UI
-  DEPENDS:=+rpcd +rpcd-mod-iwinfo +uhttpd +uhttpd-mod-ubus
+  DEPENDS:=+rpcd +rpcd-mod-iwinfo +uhttpd +uhttpd-mod-ubus +libubox +libubus
 endef
 
 define Package/luci2/description

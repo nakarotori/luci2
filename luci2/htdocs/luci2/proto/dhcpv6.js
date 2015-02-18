@@ -1,4 +1,4 @@
-L.NetworkModel.Protocol.extend({
+L.network.Protocol.extend({
 	protocol:    'dhcpv6',
 	description: L.tr('DHCPv6 client / IPv6 autoconfig'),
 	tunnel:      false,
