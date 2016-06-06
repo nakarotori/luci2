@@ -716,10 +716,10 @@
 			).then(function() {
 				self.renderView(L.globals.defaultNode).then(function() {
 					self.loading(false);
-				});
-
-				$(window).on('hashchange', function() {
-					self.changeView();
+					
+					$(window).on('hashchange', function() {
+						self.changeView();
+					});
 				});
 			});
 		},
